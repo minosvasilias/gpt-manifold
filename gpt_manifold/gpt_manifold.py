@@ -132,7 +132,7 @@ def post_comment(market_id, comment):
     url = f'https://manifold.markets/api/v0/comment'
     body = {
         "contractId": market_id,
-        "content": disclaimer_comment,
+        "markdown": disclaimer_comment,
     }
     headers = {
         "Authorization": f"Key {manifold_key}"
