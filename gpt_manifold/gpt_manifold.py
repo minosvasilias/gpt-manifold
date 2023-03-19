@@ -216,7 +216,7 @@ def place_bet(market_id, bet_outcome, bet_amount, comment):
     next_pick = ""
     if index == 0:
         next_pick = "Comment successfully posted!"
-        post_comment(comment)
+        post_comment(market_id, comment)
     _option, index = pick(
         options, wrap_string(f'{next_pick} Would you like to view other markets?'))
     if index == 0:
