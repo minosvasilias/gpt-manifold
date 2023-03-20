@@ -65,13 +65,15 @@ def choose_max_bet():
 
 
 def choose_navigation():
-    options = ["Recent Markets", "Market Groups", "Exit"]
+    options = ["Recent Markets", "Market Groups", "Market URL", "Exit"]
     _option, index = pick(options, "Select navigation mode:")
     if index == 0:
         show_markets()
     elif index == 1:
         show_groups()
     elif index == 2:
+        show_market_url_input()
+    elif index == 3:
         exit()
 
 
@@ -115,6 +117,26 @@ def get_all_markets(before_id):
     else:
         raise RuntimeError(
             f"Error: Unable to retrieve markets data (status code: {response.status_code})")
+
+
+def get_market_data_by_url(market_url):
+    print_status("Retrieving market data...")
+    pattern = r'([^/]+)$'
+    result = re.search(pattern, market_url)
+    if result:
+        market_slug = result.group(1)
+        url = f'https://manifold.markets/api/v0/slug/{market_slug}'
+        response = requests.get(url)
+
+        if response.status_code == 200:
+            data = response.json()
+            return data
+        else:
+            raise RuntimeError(
+                f"Error: Unable to retrieve market data (status code: {response.status_code})")
+    else:
+        raise RuntimeError(
+            f"Error: Unable to retrieve market data, invalid URL: {market_url}")
 
 
 def get_market_data(market_id):
@@ -222,7 +244,7 @@ def show_group_markets(group_id):
     if index == 0:
         show_groups()
     else:
-        show_market(data[index - 1]["id"])
+        show_market_by_id(data[index - 1]["id"])
 
 
 def show_markets(before_id="", base_index=0):
@@ -239,11 +261,20 @@ def show_markets(before_id="", base_index=0):
     elif index == len(options) - 1:
         show_markets(data[index - 2]["id"], base_index + index - 1)
     else:
-        show_market(data[index - 1]["id"])
+        show_market_by_id(data[index - 1]["id"])
 
 
-def show_market(market_id):
+def show_market_by_url(market_url):
+    data = get_market_data_by_url(market_url)
+    show_market(data)
+
+
+def show_market_by_id(market_id):
     data = get_market_data(market_id)
+    show_market(data)
+
+
+def show_market(data):
     options = ["Yes", "No"]
     index = 0
     _option, index = pick(
@@ -252,6 +283,11 @@ def show_market(market_id):
         prompt(market_id)
     else:
         choose_navigation()
+
+
+def show_market_url_input():
+    market_url = print_input("Enter the URL of the market you wish to view: ")
+    show_market_by_url(market_url)
 
 
 def prompt(market_id):
@@ -331,6 +367,11 @@ def wrap_string(text):
 def print_status(text):
     cls()
     print(text)
+
+
+def print_input(text):
+    cls()
+    return input(text)
 
 
 def cls():
