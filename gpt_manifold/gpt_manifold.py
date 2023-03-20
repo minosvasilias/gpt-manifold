@@ -306,7 +306,8 @@ def prompt_for_prediction(market_id, auto_bet=False, auto_comment=False):
     system_prompt = system_template.format(
         character=get_character(), date=date, max_bet=max_bet)
 
-    log_session.write_message('MARKET INFO', user_prompt)
+    log_session.write_message('BET PROMPT', system_prompt)
+    log_session.write_message('BET INFO', user_prompt)
 
     messages = [
         {"role": "system", "content": system_prompt},
@@ -354,19 +355,19 @@ def prompt_for_group(auto_bet=False, auto_comment=False):
     for group in random_groups:
         if (group["totalContracts"] > 9):
             group_list_string += f'{group["name"]}\n'
-    log_session.write_message('GROUPS', group_list_string)
-    print_status(group_list_string)
+
     user_prompt = group_list_string
     date = datetime.datetime.now()
     system_prompt = system_template_groups.format(
         character=get_character(), date=date)
+    log_session.write_message('GROUP PROMPT', system_prompt)
+    log_session.write_message('GROUP LIST', group_list_string)
 
     messages = [
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": user_prompt}
     ]
     answer = get_completion(messages)
-    print_status(answer)
     log_session.write_message('SELECTED GROUP', answer)
 
     for group in random_groups:
@@ -386,20 +387,18 @@ def prompt_for_market(group_id, auto_bet=False, auto_comment=False):
         if (market["isResolved"] == False and "probability" in market):
             market_list_string += f'{market["question"]}\n'
 
-    print_status(market_list_string)
-    log_session.write_message('MARKETS', market_list_string)
-
     user_prompt = market_list_string
     date = datetime.datetime.now()
     system_prompt = system_template_markets.format(
         character=get_character(), date=date)
+    log_session.write_message('MARKET PROMPT', system_prompt)
+    log_session.write_message('MARKET LIST', market_list_string)
 
     messages = [
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": user_prompt}
     ]
     answer = get_completion(messages)
-    print_status(answer)
     log_session.write_message('SELECTED MARKET', answer)
     for market in random_markets:
         if market["question"] in answer:
