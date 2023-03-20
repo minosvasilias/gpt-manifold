@@ -280,7 +280,7 @@ def show_market(data):
     _option, index = pick(
         options, wrap_string(f'Question: {data["question"]}\n\nDescription: {data["textDescription"]}\n\nCurrent probability: {format_probability(data["probability"])}\n\n - Do you want GPT-Manifold to make a prediction?'))
     if index == 0:
-        prompt(market_id)
+        prompt(data["id"])
     else:
         choose_navigation()
 
