@@ -15,8 +15,8 @@ You will be given the definition of one of these markets, as well as the current
 Do not spend more than {max_bet} play money on a single bet.
 
 Your options are:
-<YES>BET_AMOUNT</YES>
-<NO>BET_AMOUNT</NO>
+<YES>AMOUNT</YES>
+<NO>AMOUNT</NO>
 <ABSTAIN/>
 
 Make sure to end your answer with one of these options."""
@@ -307,14 +307,16 @@ def prompt(market_id):
     answer = get_completion(messages)
 
     last_tag = find_tags(answer)[-1]
+    action = last_tag[0]
+    amount = re.sub("[^0-9]", "", last_tag[1])
     options = ["Yes", "No"]
     _option, index = pick(
-        options, wrap_string(f'{answer}\n\nThe chosen action is {last_tag[0]} with a value of {last_tag[1]}\nYour current balance is {balance}.\nDo you want to execute that action?'))
+        options, wrap_string(f'{answer}\n\nThe chosen action is {action} with a value of {amount}\nYour current balance is {balance}.\nDo you want to execute that action?'))
     if index == 0:
-        if (last_tag[0] == "ABSTAIN"):
+        if (action == "ABSTAIN"):
             choose_navigation()
         else:
-            place_bet(market_id, last_tag[0], last_tag[1], answer)
+            place_bet(market_id, action, amount, answer)
     else:
         choose_navigation()
 
@@ -346,10 +348,10 @@ def find_tags(text):
             content = match[1]
         else:
             tag_name = match[2]
-            content = None
+            content = "0"
         parsed_tags.append((tag_name, content))
     if len(parsed_tags) == 0:
-        parsed_tags.append("ABSTAIN", None)
+        parsed_tags.append("ABSTAIN", "0")
     return parsed_tags
 
 

@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name="gpt_manifold",
-    version="1.0.2",
+    version="1.0.3",
     packages=find_packages(),
     install_requires=[
         "openai",
