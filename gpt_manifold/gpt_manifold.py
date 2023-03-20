@@ -303,7 +303,8 @@ def prompt_for_prediction(market_id, auto_bet=False, auto_comment=False):
     user_prompt = user_template.format(
         title=title, description=description, probability=probability, play_money=balance)
     date = datetime.datetime.now()
-    system_prompt = system_template.format(date=date, max_bet=max_bet)
+    system_prompt = system_template.format(
+        character=get_character(), date=date, max_bet=max_bet)
 
     log_session.write_message('MARKET INFO', user_prompt)
 
@@ -357,7 +358,8 @@ def prompt_for_group(auto_bet=False, auto_comment=False):
     print_status(group_list_string)
     user_prompt = group_list_string
     date = datetime.datetime.now()
-    system_prompt = system_template_groups.format(date=date)
+    system_prompt = system_template_groups.format(
+        character=get_character(), date=date)
 
     messages = [
         {"role": "system", "content": system_prompt},
@@ -389,7 +391,8 @@ def prompt_for_market(group_id, auto_bet=False, auto_comment=False):
 
     user_prompt = market_list_string
     date = datetime.datetime.now()
-    system_prompt = system_template_markets.format(date=date)
+    system_prompt = system_template_markets.format(
+        character=get_character(), date=date)
 
     messages = [
         {"role": "system", "content": system_prompt},
@@ -452,6 +455,13 @@ def find_tags(text):
     if len(parsed_tags) == 0:
         parsed_tags.append("ABSTAIN", "0")
     return parsed_tags
+
+
+def get_character():
+    if model == "gpt-4":
+        return gpt_4_character
+    elif model == "gpt-3.5-turbo":
+        return chat_gpt_character
 
 
 def format_probability(probability):
