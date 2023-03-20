@@ -33,6 +33,7 @@ model = ""
 manifold_key = ""
 max_bet = 0
 balance = 0
+page_limit = 100
 
 
 def init():
@@ -46,7 +47,7 @@ def init():
         raise ValueError("Error: MANIFOLD_KEY environment variable not set")
     choose_model()
     choose_max_bet()
-    show_markets()
+    choose_navigation()
 
 
 def choose_model():
@@ -63,9 +64,49 @@ def choose_max_bet():
     max_bet = option
 
 
-def get_all_markets():
+def choose_navigation():
+    options = ["Recent Markets", "Market Groups", "Exit"]
+    _option, index = pick(options, "Select navigation mode:")
+    if index == 0:
+        show_markets()
+    elif index == 1:
+        show_groups()
+    elif index == 2:
+        exit()
+
+
+def get_all_groups():
     update_balance()
-    url = f'https://manifold.markets/api/v0/markets?limit=500'
+    print_status("Retrieving groups...")
+    url = f'https://manifold.markets/api/v0/groups'
+    response = requests.get(url)
+
+    if response.status_code == 200:
+        data = response.json()
+        return data
+    else:
+        raise RuntimeError(
+            f"Error: Unable to retrieve group data (status code: {response.status_code})")
+
+
+def get_group_markets(group_id):
+    print_status("Retrieving markets for group...")
+    url = f'https://manifold.markets/api/v0/group/by-id/{group_id}/markets'
+    response = requests.get(url)
+
+    if response.status_code == 200:
+        data = response.json()
+        return data
+    else:
+        raise RuntimeError(
+            f"Error: Unable to retrieve group market data (status code: {response.status_code})")
+
+
+def get_all_markets(before_id):
+    if (len(before_id) == 0):
+        update_balance()
+    print_status("Retrieving markets...")
+    url = f'https://manifold.markets/api/v0/markets?limit={page_limit}&before={before_id}'
     response = requests.get(url)
 
     if response.status_code == 200:
@@ -156,15 +197,49 @@ def get_completion(messages):
     return answer
 
 
-def show_markets():
-    data = get_all_markets()
+def show_groups():
+    data = get_all_groups()
     options = []
+    options.append("Return to mode selection <-")
+    for index, group in enumerate(data):
+        options.append(
+            f'{index} - {group["name"]}: {group["totalContracts"]} markets')
+    _option, index = pick(options, "Select group you wish to view")
+    if index == 0:
+        choose_navigation()
+    else:
+        show_group_markets(data[index - 1]["id"])
+
+
+def show_group_markets(group_id):
+    data = get_group_markets(group_id)
+    options = []
+    options.append("Return to Groups <-")
     for index, market in enumerate(data):
-        print(f'{index} - {market["creatorName"]}: {market["question"]}')
         options.append(
             f'{index} - {market["creatorName"]}: {market["question"]}')
     _option, index = pick(options, "Select market you wish to view")
-    show_market(data[index]["id"])
+    if index == 0:
+        show_groups()
+    else:
+        show_market(data[index - 1]["id"])
+
+
+def show_markets(before_id="", base_index=0):
+    data = get_all_markets(before_id)
+    options = []
+    options.append("Return to mode selection <-")
+    for index, market in enumerate(data):
+        options.append(
+            f'{base_index + index} - {market["creatorName"]}: {market["question"]}')
+    options.append("Next page ->")
+    _option, index = pick(options, "Select market you wish to view")
+    if index == 0:
+        choose_navigation()
+    elif index == len(options) - 1:
+        show_markets(data[index - 2]["id"], base_index + index - 1)
+    else:
+        show_market(data[index - 1]["id"])
 
 
 def show_market(market_id):
@@ -176,7 +251,7 @@ def show_market(market_id):
     if index == 0:
         prompt(market_id)
     else:
-        show_markets()
+        choose_navigation()
 
 
 def prompt(market_id):
@@ -201,11 +276,11 @@ def prompt(market_id):
         options, wrap_string(f'{answer}\n\nThe chosen action is {last_tag[0]} with a value of {last_tag[1]}\nYour current balance is {balance}.\nDo you want to execute that action?'))
     if index == 0:
         if (last_tag[0] == "ABSTAIN"):
-            show_markets()
+            choose_navigation()
         else:
             place_bet(market_id, last_tag[0], last_tag[1], answer)
     else:
-        show_markets()
+        choose_navigation()
 
 
 def place_bet(market_id, bet_outcome, bet_amount, comment):
@@ -220,7 +295,7 @@ def place_bet(market_id, bet_outcome, bet_amount, comment):
     _option, index = pick(
         options, wrap_string(f'{next_pick} Would you like to view other markets?'))
     if index == 0:
-        show_markets()
+        choose_navigation()
     else:
         exit()
 
