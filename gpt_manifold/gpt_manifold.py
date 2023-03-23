@@ -215,7 +215,7 @@ def post_comment(market_id, comment):
 def get_completion(messages):
     print_status(f"Getting answer from {model}...")
     response = openai.ChatCompletion.create(
-        model="gpt-4",
+        model=model,
         messages=messages
     )
     answer = response["choices"][0]["message"]["content"]
