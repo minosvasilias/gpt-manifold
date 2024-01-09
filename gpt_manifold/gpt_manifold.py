@@ -83,7 +83,7 @@ def choose_auto_bet():
 def get_all_groups():
     update_balance()
     print_status("Retrieving groups...")
-    url = f'https://manifold.markets/api/v0/groups'
+    url = f'https://api.manifold.markets/v0/groups'
     response = requests.get(url)
 
     if response.status_code == 200:
@@ -96,7 +96,7 @@ def get_all_groups():
 
 def get_group_markets(group_id):
     print_status("Retrieving markets for group...")
-    url = f'https://manifold.markets/api/v0/group/by-id/{group_id}/markets'
+    url = f'https://api.manifold.markets/v0/group/by-id/{group_id}/markets'
     response = requests.get(url)
 
     if response.status_code == 200:
@@ -111,7 +111,7 @@ def get_all_markets(before_id):
     if (len(before_id) == 0):
         update_balance()
     print_status("Retrieving markets...")
-    url = f'https://manifold.markets/api/v0/markets?limit={page_limit}&before={before_id}'
+    url = f'https://api.manifold.markets/v0/markets?limit={page_limit}&before={before_id}'
     response = requests.get(url)
 
     if response.status_code == 200:
@@ -128,7 +128,7 @@ def get_market_data_by_url(market_url):
     result = re.search(pattern, market_url)
     if result:
         market_slug = result.group(1)
-        url = f'https://manifold.markets/api/v0/slug/{market_slug}'
+        url = f'https://api.manifold.markets/v0/slug/{market_slug}'
         response = requests.get(url)
 
         if response.status_code == 200:
@@ -144,7 +144,7 @@ def get_market_data_by_url(market_url):
 
 def get_market_data(market_id):
     print_status("Retrieving market data...")
-    url = f'https://manifold.markets/api/v0/market/{market_id}'
+    url = f'https://api.manifold.markets/v0/market/{market_id}'
     response = requests.get(url)
 
     if response.status_code == 200:
@@ -157,7 +157,7 @@ def get_market_data(market_id):
 
 def update_balance():
     print_status("Updating current balance...")
-    url = f'https://manifold.markets/api/v0/me'
+    url = f'https://api.manifold.markets/v0/me'
     headers = {
         "Authorization": f"Key {manifold_key}"
     }
@@ -173,7 +173,7 @@ def update_balance():
 
 def post_bet(market_id, bet_amount, bet_outcome):
     print_status("Posting bet...")
-    url = f'https://manifold.markets/api/v0/bet'
+    url = f'https://api.manifold.markets/v0/bet'
     body = {
         "contractId": market_id,
         "amount": int(bet_amount),
@@ -195,7 +195,7 @@ def post_comment(market_id, comment):
     print_status("Posting comment...")
     disclaimer_comment = disclaimer.format(model=model, comment=comment)
 
-    url = f'https://manifold.markets/api/v0/comment'
+    url = f'https://api.manifold.markets/v0/comment'
     body = {
         "contractId": market_id,
         "markdown": disclaimer_comment,
